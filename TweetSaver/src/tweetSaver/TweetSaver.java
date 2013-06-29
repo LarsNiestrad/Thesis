@@ -60,7 +60,7 @@ public class TweetSaver {
                 source[2] = "blackberry";
                 source[3] = "windows";
 
-                //shutdown after 0,5 Mio Tweets
+                //shutdown after 5 Mio Tweets
                 if (tweetNrGesamt == 5000000) {
                     System.exit(0);
                 }
