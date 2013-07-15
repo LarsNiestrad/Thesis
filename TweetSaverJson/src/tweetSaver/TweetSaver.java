@@ -144,6 +144,13 @@ public class TweetSaver {
                         pWriter.print("]}}");
                         pWriter.flush();
                         
+						allIDs = new long[tweetQuantity]; //Array for the tweet id´s
+						allLatitude = new double[tweetQuantity]; //array for the Lat values of the tweets
+						allLongtitude = new double[tweetQuantity]; //array for the Longt values of the tweets
+						allSources = new int[tweetQuantity]; //array for the source of the tweets
+						allHashtags = new String[tweetQuantity]; //array for the hashtags
+						allLinks = new String[tweetQuantity]; //array for the links
+						allTimeStamps = new Date[tweetQuantity]; //array for the timestamps
 
 
                     } catch (IOException ex) {
