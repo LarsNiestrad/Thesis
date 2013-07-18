@@ -48,10 +48,10 @@ public class TweetSaver {
          */
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true);
-        cb.setOAuthConsumerKey("pBWTM6B3tlonwLRJRnt1Q");
-        cb.setOAuthConsumerSecret("pgMoVw3FadMJBsO9Lr4GxNrK5azhT97erdSVfeP4G9Q");
-        cb.setOAuthAccessToken("1459692325-7BDyQHfBNX6qQyYpKoJZWSIqIi23bsM6v24VH9e");
-        cb.setOAuthAccessTokenSecret("fqSSJK8pMiBi8s8vk7tMpbYTAkHDDzAiuhM2WLhfE");
+        cb.setOAuthConsumerKey("xxx");
+        cb.setOAuthConsumerSecret("xxx");
+        cb.setOAuthAccessToken("xxx-xxx");
+        cb.setOAuthAccessTokenSecret("xxx");
 
         //Getting in Twitter Stream..
         TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
