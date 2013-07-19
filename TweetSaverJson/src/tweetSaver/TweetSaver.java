@@ -4,10 +4,13 @@
  */
 package tweetSaver;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import twitter4j.HashtagEntity;
 import twitter4j.StallWarning;
 import twitter4j.Status;
@@ -24,19 +27,19 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 public class TweetSaver {
 
-    final Timer timer = new Timer();
-    boolean tenMinutesPassed = false;
-
+    private final Timer timer = new Timer();
+    private boolean tenMinutesPassed = false;
+    private int timeSecondsInterval = 600;
+    
     public void startTimer() {
         System.out.println("Timer gestartet");
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 tenMinutesPassed = true;
-                System.out.println("10 seconds passed");
-
+                System.out.println(timeSecondsInterval+" seconds passed");
             }
-        }, 15000, 15000);
+        }, timeSecondsInterval*1000, timeSecondsInterval*1000);
     }
 
     public void CollectData() {
@@ -56,11 +59,8 @@ public class TweetSaver {
         //Getting in Twitter Stream..
         TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
         StatusListener listener = new StatusListener() {
-            /*Counter for automatical shutdown if a specific number of saved 
-             tweets is reached*/
-            int tweetNrGesamt = 0,
-                    fileNumber = 1,
-                    tweetInterval = 0;
+            /*Counter the files that has been created to avoid naming conflicts*/
+            int fileNumber = 1;        
             TweetInterval ti = new TweetInterval();
             List<TweetInterval> tweetList = new LinkedList<>();
             FileSaver fileSaver = new FileSaver();
@@ -69,21 +69,30 @@ public class TweetSaver {
             public void onStatus(Status status) {
 
                 //Array for checking the source of the Tweets
-                String source[] = new String[4];
+                String source[] = new String[5];
                 source[0] = "android"; //1 android
                 source[1] = "iphone"; //2 iphone
                 source[2] = "blackberry"; //3 blackberry
                 source[3] = "windows"; //4 windows
+                source[4] = "other";
 
-                //write the saved tweets in a json file if 20 minutes have passed
+                //write the saved tweets in a json file if the given time has passed
                 if (tenMinutesPassed == true) {
                     tweetList.add(ti);
+                    System.out.println("Tweetliste erfolgreich hinzugefügt");
                     ti = new TweetInterval();
-                    fileSaver.saveToJson(fileNumber, tweetList);
+                    tenMinutesPassed = false;
+                }
+
+                if (tweetList.size() > 2) {
+                    System.out.println("Aufruf savte2json");
+                    try {
+                        fileSaver.saveToJson(fileNumber, tweetList);
+                    } catch (IOException ex) {
+                        Logger.getLogger(TweetSaver.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     fileNumber++;
                     tweetList.clear();
-                    tweetNrGesamt = 0;
-                    tenMinutesPassed = false;
                 }
 
                 //only save Tweets with Geolocation information included
@@ -93,11 +102,11 @@ public class TweetSaver {
                     ti.setID(status.getId());
 
                     //save source(IPhone,Android..) 
-                    for (int i = 0; i < 4; i++) {
-                        if (status.getSource().contains(source[i])) {
+                    for (int i = 0; i < 5; i++) {
+                        if (i < 4 && status.getSource().contains(source[i])) {
                             ti.setSource(i + 1);
                             break;
-                        } else {
+                        } else if (i > 3) {
                             ti.setSource(5);
                         }
                     }
@@ -107,44 +116,45 @@ public class TweetSaver {
                     ti.setLongtitude(status.getGeoLocation().getLongitude());
 
                     //search and save the HashTags
-                    if (status.getHashtagEntities().length > 0) {
-                        HashtagEntity hte[] = new HashtagEntity[status.getHashtagEntities().length];
-                        hte = status.getHashtagEntities();
-                        StringBuffer sBuffer = new StringBuffer();
+                    HashtagEntity hte[] = new HashtagEntity[status.getHashtagEntities().length];
+                    hte = status.getHashtagEntities();
+                    StringBuilder sBuilder = new StringBuilder();
+                    if (status.getHashtagEntities() != null) {
                         for (int i = 0; status.getHashtagEntities().length > i; i++) {
                             if (i < 1) {
-                                sBuffer.append(hte[i].getText());
+                                sBuilder.append(hte[i].getText());
                             } else {
-                                sBuffer.append(" ," + hte[i].getText());
+                                sBuilder.append(" ,").append(hte[i].getText());
                             }
                         }
-                        ti.setHashtags(sBuffer.toString());
+                    } else {
+                        sBuilder.append("none");
                     }
+
+                    ti.setHashtags(sBuilder.toString());
+                    //clear StringBuilder 
+                    sBuilder.delete(0, sBuilder.length());
 
 
                     //save the Links
-                    if (status.getURLEntities().length > 0) {
-                        //get as much URLEntities as URLs are in the Tweets
-                        URLEntity ue[] = new URLEntity[status.getURLEntities().length];
-                        ue = status.getURLEntities();
-                        StringBuffer sBuffer = new StringBuffer();
+                    URLEntity ue[] = new URLEntity[status.getURLEntities().length];
+                    ue = status.getURLEntities();
+                    if (status.getURLEntities() != null) {
                         for (int i = 0; status.getURLEntities().length > i; i++) {
                             if (i < 1) {
-                                sBuffer.append(ue[i].getURL());
+                                sBuilder.append(ue[i].getURL());
                             } else {
-                                sBuffer.append(", " + ue[i].getURL());
+                                sBuilder.append(", ").append(ue[i].getURL());
                             }
                         }
-                        ti.setLinks(sBuffer.toString());
+                    } else {
+                        sBuilder.append("none");
                     }
+                    ti.setLinks(sBuilder.toString());
+                    sBuilder.delete(0, sBuilder.length());
 
                     //save the date 
                     ti.setTimeStamp(status.getCreatedAt());
-
-                    //show saved tweet in console for checkup
-                    System.out.println(status.getId());
-                    System.out.println(status.getGeoLocation());
-                    System.out.println(status.getCreatedAt());
                 }
             }
 

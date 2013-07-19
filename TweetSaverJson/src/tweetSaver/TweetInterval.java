@@ -14,13 +14,13 @@ import java.util.List;
  */
 public class TweetInterval {
  
-    List<Long> allIDs = new ArrayList<>();
-    List<Double> allLatitude = new ArrayList<>();
-    List<Double> allLongtitude = new ArrayList<>();
-    List<Integer> allSources = new ArrayList<>();
-    List<String> allHashtags = new ArrayList<>();
-    List<String> allLinks = new ArrayList<>();
-    List<Date> allTimeStamps = new ArrayList<>();
+    private List<Long> allIDs = new ArrayList<>();
+    private List<Double> allLatitude = new ArrayList<>();
+    private List<Double> allLongtitude = new ArrayList<>();
+    private List<Integer> allSources = new ArrayList<>();
+    private List<String> allHashtags = new ArrayList<>();
+    private List<String> allLinks = new ArrayList<>();
+    private List<Date> allTimeStamps = new ArrayList<>();
 
     public List<Long> getAllIDs() {
         return allIDs;

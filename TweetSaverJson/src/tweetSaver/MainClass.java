@@ -7,6 +7,7 @@ package tweetSaver;
 
 
 /**
+ * Main class, starts the relevant Methods
  *
  * @author Lars
  */

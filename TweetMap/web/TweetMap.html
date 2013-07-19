@@ -8,19 +8,19 @@ and open the template in the editor.
         <meta charset="utf-8"/>
         <title>Twittermap</title>
 
+
         <!--                integrating jQuery (outside the jvm sources)-->
-        <script src="//code.jquery.com/jquery-1.9.1.js"></script>
-        <script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
         <style>#slider { margin: 10px; }	</style>
         <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
         <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
-        <!--                integrate the jVectorMap files-->
 
+        <!--                integrate the jVectorMap files-->
         <link rel="stylesheet" href="jvmSources/jvectormap/jquery-jvectormap-1.2.2.css"/>
-        <script src="jvmSources/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>
-        <script type="text/javascript" src="gdp-data.js"></script>
-        <!--        <script src="assets/jquery-1.8.2.js"></script>-->
+        <!--        <script src="jvmSources/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>-->
+        <!--        <script type="text/javascript" src="gdp-data.js"></script>-->
         <script src="jvmSources/jquery-jvectormap.js"></script>
         <script src="jvmSources/jquery-mousewheel.js"></script>
         <script src="jvmSources/lib/jvectormap.js"></script>
@@ -62,10 +62,9 @@ and open the template in the editor.
             function showMap() { 
                 $(function(){ 
                     //load the data via ajax request
-                    $.getJSON('DataFile1.json',function(data){
+                    $.getJSON('1.json',function(data){
                         var val=1;
-                        var twitterSource = Array.prototype.concat.apply([], jvm.values(data.tweets.source));
-                        
+                        var twitterSource = Array.prototype.concat.apply([], jvm.values(data.tweets.sources));
                         //draw the map including markers
                         $('#world-map-markers').vectorMap({
                             map: 'world_mill_en',
@@ -74,7 +73,7 @@ and open the template in the editor.
                             hoverOpacity: 0.7,
                             hoverColor: false,
                             backgroundColor: 'cornflowerblue', 
-                            markers: data.tweets.geolocation,
+                            markers: data.tweets[val].geolocation, 
                             series: {
                                 markers: [{
                                         attribute: 'fill',
@@ -82,40 +81,45 @@ and open the template in the editor.
                                             '1': '#00ff00',
                                             '2': '#FF69B4',
                                             '3': '#4169E1',
-                                            '4': '#ffff00',
+                                            '4': '#9400d3',
                                             '5': '#000000'
                                         },
-                                        values: data.tweets.source,
-                                        min: jvm.min(twitterSource),
-                                        max: jvm.max(twitterSource)
-                                    }]
+                                        values: data.tweets[val].sources,
+                                        min: 1,//jvm.min(twitterSource),
+                                        max: 5//jvm.max(twitterSource)
+                                    },
+                                    {
+                                        attribute: 'r',
+                                        scale: [0.5],
+                                        values: [0.5],
+                                        min: 0.5,
+                                        max: 0.5
+                                    }
+                                ]
                             },
                             onMarkerLabelShow: function(event, label, index){
                                 label.html(
-                                '<b>Tweet ID:</b> '+data.tweets.id[index]+'<br/>'+
-                                    '<b>Hashtags: </b>'+data.tweets.hashtags[index]+'<br/>'+
-                                    '<b>Links: </b>'+data.tweets.links[index]
+                                '<b>Tweet ID: </b>'+data.tweets[val].ids[index]+'<br/>'+
+                                    '<b>Hashtags: </b>'+data.tweets[val].hashtags[index]+'<br/>'+
+                                    '<b>Links: </b>'+data.tweets[val].links[index]
                             );
                             }  
                         });
-                        var mapObject = $('#world-map-markers').vectorMap('get', 'mapObject');
                         
-                        $("#slider").slider(
-                        {
-                            range: "min",
-                            value: 0,
-                            min: 0,
-                            max: 23,
-                            //step: 1,
+                        var mapObject = $('#world-map-markers').vectorMap('get', 'mapObject');
+                                               
+                        $("#slider").slider({
+                            value: 1,
+                            min: 1,
+                            max: 3, //for testing - the test data set has 3 15 seconds steps
+                            step: 1,
                             slide: function( event, ui ) {
-                                /* next target: slider should manipulate the map
-                                 * by drawing markers on the map dependent on 
-                                 * the timestamp of every tweet. E.g. show the 
-                                 * change over a day*/ 
+                                mapObject.removeAllMarkers();
+                                val = ui.value;
+                                mapObject.series.markers[0].setValues(data.tweets[ui.value]);
+                                mapObject.addMarkers(data.tweets[ui.value].geolocation,[data.tweets[ui.value].sources]);
                             }
-                        }
-                    );
-                        //                        
+                        });
                     });    
                 });            
             } 
@@ -123,25 +127,23 @@ and open the template in the editor.
     </head>
 
     <body>
-
         <!--        Map-->
         <div id="world-map-markers" style="width: 1024px; height: 768px"></div>
-
         <script type="text/javascript">  
             showMap();
         </script>
 
-        <!--  The div that is used as the slider container  -->
+        <!--  Slider  -->
         <div id="slider"></div>
 
         <!--        Legende-->
-        <div style="padding:20px; border:thin solid black; margin:25px">
+        <div style="padding:5px; border:thin solid black; margin:5px">
             <h1>Legende</h1>
             <ul>
                 <li><span style="font-weight:bold; color:#00ff00">Android</span></li>
                 <li><span style="font-weight:bold; color:#FF69B4">iOS</span></li>
                 <li><span style="font-weight:bold; color:#4169E1">Blackberry</span></li>
-                <li><span style="font-weight:bold; color:#ffff00">Windows</span></li>
+                <li><span style="font-weight:bold; color:#9400d3">Windows</span></li>
                 <li><span style="font-weight:bold; color:#000000">Andere</span></li>
             </ul>
         </div>

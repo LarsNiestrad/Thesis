@@ -11,11 +11,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>JSP Page</title>
     </head>
-    <body>
-        <script>
-            alert("hier!");
-        </script>
-        
-        <jsp:forward page="TEST.html" />
+    <body>       
+        <jsp:forward page="TweetMap.html" />
     </body>
 </html>
