@@ -14,7 +14,6 @@ package tweetSaver;
 public class MainClass {
     public static void main(String[] args)  {
         TweetSaver ts = new TweetSaver();
-        ts.startTimer();
-        ts.CollectData();
+        ts.init();
     }
 }

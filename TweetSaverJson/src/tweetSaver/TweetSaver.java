@@ -5,8 +5,10 @@
 package tweetSaver;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -29,20 +31,29 @@ public class TweetSaver {
 
     private final Timer timer = new Timer();
     private boolean tenMinutesPassed = false;
-    private int timeSecondsInterval = 600;
-    
-    public void startTimer() {
+    private int timeSecondsInterval = 15;
+    private Map<String, Integer> cCodes = new HashMap<>();
+
+    public void init() {
+
+        
+        startTimer();
+        CollectData();
+
+    }
+
+    private void startTimer() {
         System.out.println("Timer gestartet");
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 tenMinutesPassed = true;
-                System.out.println(timeSecondsInterval+" seconds passed");
+                System.out.println(timeSecondsInterval + " seconds passed");
             }
-        }, timeSecondsInterval*1000, timeSecondsInterval*1000);
+        }, timeSecondsInterval * 1000, timeSecondsInterval * 1000);
     }
 
-    public void CollectData() {
+    private void CollectData() {
 
         /*
          * Authetication - the are x placeholders for my privat auth. keys - 
@@ -60,7 +71,7 @@ public class TweetSaver {
         TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
         StatusListener listener = new StatusListener() {
             /*Counter the files that has been created to avoid naming conflicts*/
-            int fileNumber = 1;        
+            int fileNumber = 1;
             TweetInterval ti = new TweetInterval();
             List<TweetInterval> tweetList = new LinkedList<>();
             FileSaver fileSaver = new FileSaver();
@@ -88,15 +99,18 @@ public class TweetSaver {
                     System.out.println("Aufruf savte2json");
                     try {
                         fileSaver.saveToJson(fileNumber, tweetList);
+
+
                     } catch (IOException ex) {
-                        Logger.getLogger(TweetSaver.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(TweetSaver.class
+                                .getName()).log(Level.SEVERE, null, ex);
                     }
                     fileNumber++;
                     tweetList.clear();
                 }
 
-                //only save Tweets with Geolocation information included
-                if (status.getGeoLocation() != null) {
+                //only save Tweets with Geolocation & Country Code information included
+                if (status.getGeoLocation() != null && status.getPlace()!= null) {
 
                     //save the ID of the Tweets
                     ti.setID(status.getId());
@@ -130,11 +144,9 @@ public class TweetSaver {
                     } else {
                         sBuilder.append("none");
                     }
-
                     ti.setHashtags(sBuilder.toString());
                     //clear StringBuilder 
                     sBuilder.delete(0, sBuilder.length());
-
 
                     //save the Links
                     URLEntity ue[] = new URLEntity[status.getURLEntities().length];
@@ -155,6 +167,13 @@ public class TweetSaver {
 
                     //save the date 
                     ti.setTimeStamp(status.getCreatedAt());
+
+                    //save the followers
+                    ti.setFollowers(status.getUser().getFollowersCount());
+
+                    //save the countrycodes
+                    System.out.println(status.getPlace().getCountryCode());
+                    ti.setcCode(status.getPlace().getCountryCode());
                 }
             }
 
@@ -182,7 +201,6 @@ public class TweetSaver {
                 excptn.printStackTrace();
             }
         };
-
         twitterStream.addListener(listener);
         twitterStream.sample();
     }

@@ -4,12 +4,9 @@
  */
 package tweetSaver;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -26,14 +23,17 @@ public class FileSaver {
     //counter for the interval numbers
     private int i = 1;
     private PrintWriter pWriter;
-        
-    public void saveToJson (int fileNumber, List<TweetInterval> til) throws IOException{
+
+    //saves the collected Data in a json File
+    public void saveToJson(int fileNumber, List<TweetInterval> til) throws IOException {
         StringBuilder sb = new StringBuilder("{\"tweets\":{");
+        
+        //go through the saved data a build a string in json Format
         for (TweetInterval ti : til) {
+
             /*note: the ids have to be saved in quotes because jvectormap needs
              * them as a String representation to show them correctly
              */
-            
             //read the ids
             sb.append("\"").append(i).append("\":{\"ids\":[");
             for (long a : ti.getAllIDs()) {
@@ -41,6 +41,7 @@ public class FileSaver {
             }
             sb.deleteCharAt(sb.length() - 1);
             sb.append("],");
+            
             //read the sources
             sb.append("\"sources\":").append(ti.getAllSources()).append(",");
 
@@ -53,6 +54,7 @@ public class FileSaver {
                     sb.append("[").append(ti.getAllLatitude().get(u)).append(",").append(ti.getAllLongtitude().get(u)).append("]");
                 }
             }
+            
             //read the Hashtags
             sb.append("],").append("\"hashtags\":[");
             for (String str : ti.getAllHashtags()) {
@@ -61,6 +63,7 @@ public class FileSaver {
             if (ti.getAllHashtags() != null) {
                 sb.deleteCharAt(sb.length() - 1);
             }
+            
             //read the links
             sb.append("],\"links\":[");
             for (String str : ti.getAllLinks()) {
@@ -69,22 +72,34 @@ public class FileSaver {
             if (ti.getAllLinks() != null) {
                 sb.deleteCharAt(sb.length() - 1);
             }
+            
             //read the timestamps
             sb.append("],\"timestamps\":[");
             for (Date str : ti.getAllTimeStamps()) {
                 sb.append("\"").append(str).append("\",");
             }
-            sb.deleteCharAt(sb.length()-1);
-            sb.append("]},");
+            sb.deleteCharAt(sb.length() - 1);
+            
+            //read the followers
+            sb.append("],\"followers\":").append(ti.getAllFollowers()).append(",");
+
+            //get the countrycodes
+            sb.append("\"countrycodes\":{");
+            for (String cCode : ti.getcCodes().keySet()) {
+                sb.append("\"").append(cCode).append("\":").append(ti.getcCodes().get(cCode)).append(",");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append("}},");
             i++;
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append("}}");
+        
         //save the Data to File
-        pWriter = new PrintWriter(new FileWriter(fileNumber+".json" ));
+        pWriter = new PrintWriter(new FileWriter(fileNumber + ".json"));
         pWriter.print(sb.toString());
         pWriter.flush();
-        System.out.println("File saved");       
-        i=1;
+        System.out.println("File saved");
+        i = 1;
     }
 }

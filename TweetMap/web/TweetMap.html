@@ -8,10 +8,7 @@ and open the template in the editor.
         <meta charset="utf-8"/>
         <title>Twittermap</title>
 
-
         <!--                integrating jQuery (outside the jvm sources)-->
-
-
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
         <style>#slider { margin: 10px; }	</style>
         <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
@@ -19,8 +16,6 @@ and open the template in the editor.
 
         <!--                integrate the jVectorMap files-->
         <link rel="stylesheet" href="jvmSources/jvectormap/jquery-jvectormap-1.2.2.css"/>
-        <!--        <script src="jvmSources/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>-->
-        <!--        <script type="text/javascript" src="gdp-data.js"></script>-->
         <script src="jvmSources/jquery-jvectormap.js"></script>
         <script src="jvmSources/jquery-mousewheel.js"></script>
         <script src="jvmSources/lib/jvectormap.js"></script>
@@ -64,7 +59,8 @@ and open the template in the editor.
                     //load the data via ajax request
                     $.getJSON('1.json',function(data){
                         var val=1;
-                        var twitterSource = Array.prototype.concat.apply([], jvm.values(data.tweets.sources));
+                        //var statesValues = jvm.values.apply({}, jvm.values(data.tweets[val].countries)),
+                        twitterSource = Array.prototype.concat.apply([], jvm.values(data.tweets.sources));
                         //draw the map including markers
                         $('#world-map-markers').vectorMap({
                             map: 'world_mill_en',
@@ -90,18 +86,23 @@ and open the template in the editor.
                                     },
                                     {
                                         attribute: 'r',
-                                        scale: [0.5],
-                                        values: [0.5],
-                                        min: 0.5,
-                                        max: 0.5
+                                        scale: [2, 10],
+                                        normalizeFunction: 'linear',
+                                        values: data.tweets[val].followers
                                     }
-                                ]
+                                ],
+                                regions: [{
+                                        values: data.tweets[val].countrycodes,
+                                        scale: ['#C8EEFF', '#0071A4'],
+                                        normalizeFunction: 'polynomial'
+                                }]
                             },
                             onMarkerLabelShow: function(event, label, index){
                                 label.html(
                                 '<b>Tweet ID: </b>'+data.tweets[val].ids[index]+'<br/>'+
                                     '<b>Hashtags: </b>'+data.tweets[val].hashtags[index]+'<br/>'+
-                                    '<b>Links: </b>'+data.tweets[val].links[index]
+                                    '<b>Links: </b>'+data.tweets[val].links[index]+'<br/>'+
+                                    '<b>Followers:</b>'+data.tweets[val].followers[index]
                             );
                             }  
                         });
@@ -109,7 +110,7 @@ and open the template in the editor.
                         var mapObject = $('#world-map-markers').vectorMap('get', 'mapObject');
                                                
                         $("#slider").slider({
-                            value: 1,
+                            value: val,
                             min: 1,
                             max: 3, //for testing - the test data set has 3 15 seconds steps
                             step: 1,
@@ -117,7 +118,9 @@ and open the template in the editor.
                                 mapObject.removeAllMarkers();
                                 val = ui.value;
                                 mapObject.series.markers[0].setValues(data.tweets[ui.value]);
-                                mapObject.addMarkers(data.tweets[ui.value].geolocation,[data.tweets[ui.value].sources]);
+                                mapObject.series.markers[1].setValues(data.tweets[ui.value].followers);
+                                mapObject.series.regions[0].setValues(data.tweets[ui.value].countrycodes);
+                                mapObject.addMarkers(data.tweets[ui.value].geolocation,[data.tweets[ui.value].sources,data.tweets[ui.value].followers]);
                             }
                         });
                     });    
