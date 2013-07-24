@@ -1,13 +1,12 @@
 <!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
+created by lars niestrad@ larsniestrad@gmail.com
 -->
 <!DOCTYPE html>
 <html >
     <head>
         <meta charset="utf-8"/>
         <title>Twittermap</title>
-
+       
         <!--                integrating jQuery (outside the jvm sources)-->
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
         <style>#slider { margin: 10px; }	</style>
@@ -57,7 +56,7 @@ and open the template in the editor.
             function showMap() { 
                 $(function(){ 
                     //load the data via ajax request
-                    $.getJSON('1.json',function(data){
+                    $.getJSON('1d.json',function(data){
                         var val=1;
                         //var statesValues = jvm.values.apply({}, jvm.values(data.tweets[val].countries)),
                         twitterSource = Array.prototype.concat.apply([], jvm.values(data.tweets.sources));
@@ -81,8 +80,8 @@ and open the template in the editor.
                                             '5': '#000000'
                                         },
                                         values: data.tweets[val].sources,
-                                        min: 1,//jvm.min(twitterSource),
-                                        max: 5//jvm.max(twitterSource)
+                                        min: 1,//we have 5 available sources 
+                                        max: 5
                                     },
                                     {
                                         attribute: 'r',
@@ -95,7 +94,7 @@ and open the template in the editor.
                                         values: data.tweets[val].countrycodes,
                                         scale: ['#C8EEFF', '#0071A4'],
                                         normalizeFunction: 'polynomial'
-                                }]
+                                    }]
                             },
                             onMarkerLabelShow: function(event, label, index){
                                 label.html(
@@ -108,13 +107,14 @@ and open the template in the editor.
                         });
                         
                         var mapObject = $('#world-map-markers').vectorMap('get', 'mapObject');
-                                               
+                                              
                         $("#slider").slider({
                             value: val,
                             min: 1,
-                            max: 3, //for testing - the test data set has 3 15 seconds steps
+                            max: 144, //a day has 1440 minutes -> 144 ten-minutes intervals
                             step: 1,
                             slide: function( event, ui ) {
+                                $( "#amount" ).val( ui.value*10 );
                                 mapObject.removeAllMarkers();
                                 val = ui.value;
                                 mapObject.series.markers[0].setValues(data.tweets[ui.value]);
@@ -123,6 +123,7 @@ and open the template in the editor.
                                 mapObject.addMarkers(data.tweets[ui.value].geolocation,[data.tweets[ui.value].sources,data.tweets[ui.value].followers]);
                             }
                         });
+                        $( "#amount" ).val( $( "#slider" ).slider( "value" )*10 ); 
                     });    
                 });            
             } 
@@ -130,18 +131,24 @@ and open the template in the editor.
     </head>
 
     <body>
-        <!--        Map-->
-        <div id="world-map-markers" style="width: 1024px; height: 768px"></div>
+         <!--        Map-->
+        <div id="world-map-markers" style="height: 768px"></div>
         <script type="text/javascript">  
             showMap();
         </script>
 
         <!--  Slider  -->
-        <div id="slider"></div>
+        <p>
+            <label for="amount">Minutes passed:</label>
+            <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+        </p>
+        <div id="slider" ></div>
 
         <!--        Legende-->
-        <div style="padding:5px; border:thin solid black; margin:5px">
+        <div style="padding:5px; background: #dcdcdc; border:thin solid black; margin:5px">
             <h1>Legende</h1>
+            <p>The radius of the markers demonstrates the amount of followers of the tweet.</p>
+            <p>The colours of the markers tell about the operating system source of the tweet.</p>
             <ul>
                 <li><span style="font-weight:bold; color:#00ff00">Android</span></li>
                 <li><span style="font-weight:bold; color:#FF69B4">iOS</span></li>
@@ -150,6 +157,12 @@ and open the template in the editor.
                 <li><span style="font-weight:bold; color:#000000">Andere</span></li>
             </ul>
         </div>
+        <div>
+           <p>
+            Wanna see the tweets in a 'real' heatmap?<br>
+            <a href="Heatmap.html">click here</a> </p> 
+        </div>
+        
     </body>
 </html>
 
