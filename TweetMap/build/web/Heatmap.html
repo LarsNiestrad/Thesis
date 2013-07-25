@@ -7,10 +7,18 @@ created by lars niestrad@ larsniestrad@gmail.com
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
         <title>heatmap.js OpenLayers Heatmap Layer</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!--        getting the relevant libs e.g.-->
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
         <style>#slider { margin: 10px; }	</style>
         <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
         <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"></script>
+        <script type="text/javascript" src="hmjs/src/heatmap.js"></script>
+        <script type="text/javascript" src="hmjs/src/heatmap-openlayers.js"></script>
+        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+
+        <!--        configure the div containers-->
         <style>
 
             #main {
@@ -49,49 +57,16 @@ created by lars niestrad@ larsniestrad@gmail.com
 
         </style>
 
-    </head>
-    <body>
-        <div id="main">
-            <h1>Heatmap TweetMap</h1>
-            <br /><br />
-
-            <!--  Slider  -->
-            <p>
-                <label for="amount">Minutes passed:</label>
-                <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
-            </p>
-            <div id="slider"></div>
-
-            <!--            heatmap-->
-            <div id="heatmapArea"></div>
-
-            <!--            infobox-->
-            <div id="configArea">
-                <h2>Description</h2>
-                Use the Slider to go through the ten minutes intervales<br /><br />
-
-                <!--                Button for switching the heatmap layer on/off-->
-                <div id="tog" class="btn">Heatmarkers on/off</div>
-            </div>
-
-            <!--            binding in the map-->
-            <div style="position:absolute;width:940px;top:750px;text-align:center;">
-            </div>
-        </div>
-
-        <script type="text/javascript" src="http://openlayers.org/api/OpenLayers.js"></script>
-        <script type="text/javascript" src="hmjs/src/heatmap.js"></script>
-        <script type="text/javascript" src="hmjs/src/heatmap-openlayers.js"></script>
-        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
-        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <!--relevant methods-->
         <script type="text/javascript">
-            
-            var map, layer, heatmap;
 
             /**  this function reads the json file via ajax request, transforms the relevant data
-            in a format that is readable for openlayers and creates the map and the
-            heatmap layer. Furthermore it creates a slider which can be used to scroll
-            through the ten-minutes intervals*/
+       in a format that is readable for openlayers and creates the map and the
+       heatmap layer. Furthermore it creates a slider which can be used to scroll
+       through the ten-minutes intervals*/
+    
+            var map, layer, heatmap;
+    
             function init(){
                 $.getJSON('1d.json',function(testData){
                     
@@ -148,7 +123,39 @@ created by lars niestrad@ larsniestrad@gmail.com
                     $( "#amount" ).val( $( "#slider" ).slider( "value" )*10 ); 
                 });
             }
+        </script>
+    </head>
 
+    <body>
+        <div id="main">
+            <h1>Heatmap TweetMap</h1>
+            <br /><br />
+
+            <!--  slider  -->
+            <p>
+                <label for="amount">Minutes passed:</label>
+                <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+            <div id="slider"></div>
+
+            <!--            heatmap-->
+            <div id="heatmapArea"></div>
+
+            <!--            infobox-->
+            <div id="configArea">
+                <h2>Description</h2>
+                Use the Slider to go through the ten minutes intervales<br/><br/>
+
+                <!--                Button for switching the heatmap layer on/off-->
+                <div id="tog" class="btn">Heatmarkers on/off</div>
+            </div>
+
+            <!--            binding in the map-->
+            <div style="position:absolute;width:940px;top:750px;text-align:center;">
+            </div>
+        </div>
+
+        <script>
             //when the window shows up run the method for initializing the map
             window.onload = function(){ 
                 init(); 
