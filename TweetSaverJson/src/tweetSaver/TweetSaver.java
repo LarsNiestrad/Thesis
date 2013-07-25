@@ -31,7 +31,7 @@ public class TweetSaver {
 
     private final Timer timer = new Timer();
     private boolean tenMinutesPassed = false;
-    private int timeSecondsInterval = 15;
+    private int timeSecondsInterval = 600;
     private Map<String, Integer> cCodes = new HashMap<>();
 
     public void init() {
@@ -62,10 +62,10 @@ public class TweetSaver {
          */
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true);
-        cb.setOAuthConsumerKey("xxx");
-        cb.setOAuthConsumerSecret("xxx");
-        cb.setOAuthAccessToken("xxx-xxx");
-        cb.setOAuthAccessTokenSecret("xxx");
+        cb.setOAuthConsumerKey("pBWTM6B3tlonwLRJRnt1Q");
+        cb.setOAuthConsumerSecret("pgMoVw3FadMJBsO9Lr4GxNrK5azhT97erdSVfeP4G9Q");
+        cb.setOAuthAccessToken("1459692325-7BDyQHfBNX6qQyYpKoJZWSIqIi23bsM6v24VH9e");
+        cb.setOAuthAccessTokenSecret("fqSSJK8pMiBi8s8vk7tMpbYTAkHDDzAiuhM2WLhfE");
 
         //Getting in Twitter Stream..
         TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
@@ -95,7 +95,7 @@ public class TweetSaver {
                     tenMinutesPassed = false;
                 }
 
-                if (tweetList.size() > 2) {
+                if (tweetList.size() > 143) {
                     System.out.println("Aufruf savte2json");
                     try {
                         fileSaver.saveToJson(fileNumber, tweetList);
