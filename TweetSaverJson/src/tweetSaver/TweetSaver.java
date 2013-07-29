@@ -31,17 +31,21 @@ public class TweetSaver {
 
     private final Timer timer = new Timer();
     private boolean tenMinutesPassed = false;
-    private int timeSecondsInterval = 600;
+    private int timeSecondsInterval = 6;
     private Map<String, Integer> cCodes = new HashMap<>();
 
+    /**
+     * runs the methods which are necessary to collect the data
+     */
     public void init() {
-
-        
         startTimer();
         CollectData();
-
     }
 
+    /**
+     * Creates a new timer that sets the value tenMinutesPassed to true.
+     * This task is repeated in a ten-minute interval
+     */
     private void startTimer() {
         System.out.println("Timer gestartet");
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -53,6 +57,13 @@ public class TweetSaver {
         }, timeSecondsInterval * 1000, timeSecondsInterval * 1000);
     }
 
+    /**
+     * This Method connects to the Twitterstream and saves the collected data
+     * of a ten minute interval in an object of TweetInterval. This object is
+     * added to a List of TweetIntervals whenever the ten minutes have passed.
+     * Important: before you can use this method you have to replace the x with 
+     * values of your tokens and keys you get from your twitter developeraccount
+     */
     private void CollectData() {
 
         /*
@@ -62,10 +73,10 @@ public class TweetSaver {
          */
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true);
-        cb.setOAuthConsumerKey("pBWTM6B3tlonwLRJRnt1Q");
-        cb.setOAuthConsumerSecret("pgMoVw3FadMJBsO9Lr4GxNrK5azhT97erdSVfeP4G9Q");
-        cb.setOAuthAccessToken("1459692325-7BDyQHfBNX6qQyYpKoJZWSIqIi23bsM6v24VH9e");
-        cb.setOAuthAccessTokenSecret("fqSSJK8pMiBi8s8vk7tMpbYTAkHDDzAiuhM2WLhfE");
+        cb.setOAuthConsumerKey("xxx");
+        cb.setOAuthConsumerSecret("xxx");
+        cb.setOAuthAccessToken("xxx-xxx");
+        cb.setOAuthAccessTokenSecret("xxx");
 
         //Getting in Twitter Stream..
         TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
@@ -81,13 +92,13 @@ public class TweetSaver {
 
                 //Array for checking the source of the Tweets
                 String source[] = new String[5];
-                source[0] = "android"; //1 android
-                source[1] = "iphone"; //2 iphone
-                source[2] = "blackberry"; //3 blackberry
-                source[3] = "windows"; //4 windows
+                source[0] = "android"; 
+                source[1] = "iphone"; 
+                source[2] = "blackberry"; 
+                source[3] = "windows"; 
                 source[4] = "other";
 
-                //write the saved tweets in a json file if the given time has passed
+                //add the saved tweets of one interval to the List of intervals
                 if (tenMinutesPassed == true) {
                     tweetList.add(ti);
                     System.out.println("Tweetliste erfolgreich hinzugefügt");
@@ -95,12 +106,11 @@ public class TweetSaver {
                     tenMinutesPassed = false;
                 }
 
-                if (tweetList.size() > 143) {
+                //if the tweets of one day are collected save them to a json file
+                if (tweetList.size() > 5) {
                     System.out.println("Aufruf savte2json");
                     try {
                         fileSaver.saveToJson(fileNumber, tweetList);
-
-
                     } catch (IOException ex) {
                         Logger.getLogger(TweetSaver.class
                                 .getName()).log(Level.SEVERE, null, ex);
@@ -112,9 +122,15 @@ public class TweetSaver {
                 //only save Tweets with Geolocation & Country Code information included
                 if (status.getGeoLocation() != null && status.getPlace()!= null) {
 
-                    //save the ID of the Tweets
+                    //save the ID of the tweets
                     ti.setID(status.getId());
 
+                    //save the username of the tweeter
+                    ti.setusername(status.getUser().getScreenName());
+                    
+                    //save the url to the tweet
+                    ti.setUrl("https://twitter.com/"+status.getUser().getScreenName()+"/status/"+status.getId());
+                    
                     //save source(IPhone,Android..) 
                     for (int i = 0; i < 5; i++) {
                         if (i < 4 && status.getSource().contains(source[i])) {

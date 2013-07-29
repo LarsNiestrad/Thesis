@@ -80,6 +80,24 @@ public class FileSaver {
             }
             sb.deleteCharAt(sb.length() - 1);
             
+            //read the usernames
+            sb.append("],\"usernames\":[");
+            for (String str : ti.getAllUsernames()) {
+                sb.append("\"").append(str).append("\",");
+            }
+            if (ti.getAllUsernames() != null) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+            
+            //read the tweet-links
+            sb.append("],\"tweetlinks\":[");
+            for (String str : ti.getAllUrls()) {
+                sb.append("\"").append(str).append("\",");
+            }
+            if (ti.getAllUrls() != null) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+            
             //read the followers
             sb.append("],\"followers\":").append(ti.getAllFollowers()).append(",");
 

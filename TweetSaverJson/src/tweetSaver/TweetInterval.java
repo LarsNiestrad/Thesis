@@ -27,6 +27,8 @@ public class TweetInterval {
     private List<String> allLinks = new ArrayList<>();
     private List<Date> allTimeStamps = new ArrayList<>();
     private List<Integer> allFollowers = new ArrayList<>();
+    private List<String> allUsernames = new ArrayList<>();
+    private List<String> allUrls = new ArrayList<>();
     private Map<String, Integer> cCodes = new HashMap<>();
 
     public TweetInterval() {
@@ -115,4 +117,22 @@ public class TweetInterval {
     public void setcCode(String cCode) {
        System.out.println(this.cCodes.put(cCode, cCodes.get(cCode) + 1));
     }
+
+    public List<String> getAllUsernames() {
+        return allUsernames;
+    }
+
+    public void setusername(String username) {
+        allUsernames.add(username);
+    }
+
+    public List<String> getAllUrls() {
+        return allUrls;
+    }
+
+    public void setUrl(String url) {
+       allUrls.add(url);
+    }
+    
+    
 }
