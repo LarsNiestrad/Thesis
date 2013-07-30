@@ -25,8 +25,9 @@ public class FileSaver {
     private PrintWriter pWriter;
 
     //saves the collected Data in a json File
-    public void saveToJson(int fileNumber, List<TweetInterval> til) throws IOException {
-        StringBuilder sb = new StringBuilder("{\"tweets\":{");
+    public void saveToJson(int fileNumber, List<TweetInterval> til, int totalAmount, int totalIntervalAmount) throws IOException {
+        StringBuilder sb = new StringBuilder("{\"totalAmount\":["+totalAmount+
+                "],\"totalIntervalAmount\":["+totalIntervalAmount+"],\"tweets\":{");
         
         //go through the saved data a build a string in json Format
         for (TweetInterval ti : til) {

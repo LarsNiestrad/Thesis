@@ -6,7 +6,7 @@ created by lars niestrad@ larsniestrad@gmail.com
     <head>
         <meta charset="utf-8"/>
         <title>Twittermap</title>
-       
+
         <!--                integrating jQuery (outside the jvm sources)-->
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
         <style>#slider { margin: 10px; }	</style>
@@ -43,6 +43,31 @@ created by lars niestrad@ larsniestrad@gmail.com
         <script src="jvmSources/lib/world-map.js"></script>
         <script src="jvmSources/assets/jquery-jvectormap-world-mill-en.js"></script>
 
+        <!--        configure the div containers-->
+        <style>
+
+            #main {
+                position:inherit;
+                width:1020px;
+                padding:20px;
+                margin:auto;
+            }
+            #world-map-markers {
+                position:inherit;
+                width:1024px;
+                height:768px;
+                border:1px dashed black;
+                float:left;
+            }
+            #legende {
+                position:inherit;
+                width:1024px;
+                background: #dcdcdc;
+                border:thin solid black;
+                float:left;
+            }
+        </style>
+
         <script type="text/javascript">
             /*
              *This function gets the data from an extern JSON file and 
@@ -56,7 +81,7 @@ created by lars niestrad@ larsniestrad@gmail.com
             function showMap() { 
                 $(function(){ 
                     //load the data via ajax request
-                    $.getJSON('1d.json',function(data){
+                    $.getJSON('2.json',function(data){
                         var val=1;
                         //var statesValues = jvm.values.apply({}, jvm.values(data.tweets[val].countries)),
                         twitterSource = Array.prototype.concat.apply([], jvm.values(data.tweets.sources));
@@ -85,7 +110,7 @@ created by lars niestrad@ larsniestrad@gmail.com
                                     },
                                     {
                                         attribute: 'r',
-                                        scale: [2, 10],
+                                        scale: [4, 7],
                                         normalizeFunction: 'linear',
                                         values: data.tweets[val].followers
                                     }
@@ -98,12 +123,19 @@ created by lars niestrad@ larsniestrad@gmail.com
                             },
                             onMarkerLabelShow: function(event, label, index){
                                 label.html(
-                                '<b>Tweet ID: </b>'+data.tweets[val].ids[index]+'<br/>'+
+                                '<b>Twittered by: </b>'+data.tweets[val].usernames[index]+'<br/>'+
+                                    '<b>Tweet ID: </b>'+data.tweets[val].ids[index]+'<br/>'+
                                     '<b>Hashtags: </b>'+data.tweets[val].hashtags[index]+'<br/>'+
                                     '<b>Links: </b>'+data.tweets[val].links[index]+'<br/>'+
-                                    '<b>Followers:</b>'+data.tweets[val].followers[index]
+                                    '<b>Followers: </b>'+data.tweets[val].followers[index]+'<br/>'+
+                                    '<b>Link to the Tweet: </b>'+data.tweets[val].tweetlinks[index]
                             );
-                            }  
+                            },
+                            onRegionLabelShow: function(event, label, code){
+                                label.html(
+                                '<b>Amount of Tweets: <b>'+data.tweets[val].countrycodes[code]
+                            );
+                            }
                         });
                         
                         var mapObject = $('#world-map-markers').vectorMap('get', 'mapObject');
@@ -111,10 +143,11 @@ created by lars niestrad@ larsniestrad@gmail.com
                         $("#slider").slider({
                             value: val,
                             min: 1,
-                            max: 144, //a day has 1440 minutes -> 144 ten-minutes intervals
+                            max: data.totalIntervalAmount, //a day has 1440 minutes -> 144 ten-minutes intervals
                             step: 1,
                             slide: function( event, ui ) {
-                                $( "#amount" ).val( ui.value*10 );
+                                $( "#amount" ).val( data.tweets[ui.value].timestamps[1] );
+                                $( "#currentTweetAm").val(data.tweets[ui.value].ids.length);
                                 mapObject.removeAllMarkers();
                                 val = ui.value;
                                 mapObject.series.markers[0].setValues(data.tweets[ui.value]);
@@ -123,7 +156,9 @@ created by lars niestrad@ larsniestrad@gmail.com
                                 mapObject.addMarkers(data.tweets[ui.value].geolocation,[data.tweets[ui.value].sources,data.tweets[ui.value].followers]);
                             }
                         });
-                        $( "#amount" ).val( $( "#slider" ).slider( "value" )*10 ); 
+                        $( "#amount" ).val( data.tweets[1].timestamps[1] ); 
+                        $( "#currentTweetAm").val(data.tweets[val].ids.length );
+                        $( "#allTweetAm").val(data.totalAmount);
                     });    
                 });            
             } 
@@ -131,39 +166,48 @@ created by lars niestrad@ larsniestrad@gmail.com
     </head>
 
     <body>
-         <!--        Map-->
-        <div id="world-map-markers" style="height: 768px"></div>
-        <script type="text/javascript">  
-            showMap();
-        </script>
+        <div id="main">
+            <h1>TweetMap</h1>
+            <br />
+            <!--  Slider  -->
+            <p>
+                <label for="amount">Time:</label>
+                <input type="text" id="amount" size="35" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
 
-        <!--  Slider  -->
-        <p>
-            <label for="amount">Minutes passed:</label>
-            <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
-        </p>
-        <div id="slider" ></div>
+            <p>
+                <label for="currentTweetAm">Amount of Tweets of current time interval:</label>
+                <input type="text" id="currentTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
+                <label for="allTweetAm">Total Tweet amount:</label>
+                <input type="text" id="allTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+            <div id="slider" ></div>
 
-        <!--        Legende-->
-        <div style="padding:5px; background: #dcdcdc; border:thin solid black; margin:5px">
-            <h1>Legende</h1>
-            <p>The radius of the markers demonstrates the amount of followers of the tweet.</p>
-            <p>The colours of the markers tell about the operating system source of the tweet.</p>
-            <p>Hover over a Marker to view the id, the hashtags, the links and the number of followers of the tweet</p>
-            <ul>
-                <li><span style="font-weight:bold; color:#00ff00">Android</span></li>
-                <li><span style="font-weight:bold; color:#FF69B4">iOS</span></li>
-                <li><span style="font-weight:bold; color:#4169E1">Blackberry</span></li>
-                <li><span style="font-weight:bold; color:#9400d3">Windows</span></li>
-                <li><span style="font-weight:bold; color:#000000">Andere</span></li>
-            </ul>
+            <!--        Map-->
+            <div id="world-map-markers"></div>
+            <script type="text/javascript">  
+                showMap();
+            </script>
+
+            <!--        Legende-->
+            <div id="legende">
+                <h1>Legende</h1>
+                <p>The radius of the markers demonstrates the amount of followers of the tweet.</p>
+                <p>The colours of the markers tell about the operating system source of the tweet.</p>
+                <p>Hover over a Marker to view the id, the hashtags, the links and the number of followers of the tweet</p>
+                <ul>
+                    <li><span style="font-weight:bold; color:#00ff00">Android</span></li>
+                    <li><span style="font-weight:bold; color:#FF69B4">iOS</span></li>
+                    <li><span style="font-weight:bold; color:#4169E1">Blackberry</span></li>
+                    <li><span style="font-weight:bold; color:#9400d3">Windows</span></li>
+                    <li><span style="font-weight:bold; color:#000000">Andere</span></li>
+                </ul>
+                <p>
+                    <b>Wanna see the tweets in a 'real' heatmap?</b><br>
+                    <a href="Heatmap.html">click here</a>
+                </p> 
+            </div>
         </div>
-        <div>
-           <p>
-            Wanna see the tweets in a 'real' heatmap?<br>
-            <a href="Heatmap.html">click here</a> </p> 
-        </div>
-        
     </body>
 </html>
 

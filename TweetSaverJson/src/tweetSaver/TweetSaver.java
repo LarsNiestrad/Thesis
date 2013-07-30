@@ -30,9 +30,11 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TweetSaver {
 
     private final Timer timer = new Timer();
-    private boolean tenMinutesPassed = false;
+    private boolean timePassed = false;
     private int timeSecondsInterval = 6;
     private Map<String, Integer> cCodes = new HashMap<>();
+    private int totalAmount = 0; //counts the amount of tweets per file
+    private int totalIntervalAmount = 0;
 
     /**
      * runs the methods which are necessary to collect the data
@@ -43,25 +45,25 @@ public class TweetSaver {
     }
 
     /**
-     * Creates a new timer that sets the value tenMinutesPassed to true.
-     * This task is repeated in a ten-minute interval
+     * Creates a new timer that sets the value timePassed to true. This task is
+     * repeated in a ten-minute interval
      */
     private void startTimer() {
         System.out.println("Timer gestartet");
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                tenMinutesPassed = true;
+                timePassed = true;
                 System.out.println(timeSecondsInterval + " seconds passed");
             }
         }, timeSecondsInterval * 1000, timeSecondsInterval * 1000);
     }
 
     /**
-     * This Method connects to the Twitterstream and saves the collected data
-     * of a ten minute interval in an object of TweetInterval. This object is
-     * added to a List of TweetIntervals whenever the ten minutes have passed.
-     * Important: before you can use this method you have to replace the x with 
+     * This Method connects to the Twitterstream and saves the collected data of
+     * a ten minute interval in an object of TweetInterval. This object is added
+     * to a List of TweetIntervals whenever the ten minutes have passed.
+     * Important: before you can use this method you have to replace the x with
      * values of your tokens and keys you get from your twitter developeraccount
      */
     private void CollectData() {
@@ -73,10 +75,10 @@ public class TweetSaver {
          */
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true);
-        cb.setOAuthConsumerKey("xxx");
-        cb.setOAuthConsumerSecret("xxx");
-        cb.setOAuthAccessToken("xxx-xxx");
-        cb.setOAuthAccessTokenSecret("xxx");
+        cb.setOAuthConsumerKey("pBWTM6B3tlonwLRJRnt1Q");
+        cb.setOAuthConsumerSecret("pgMoVw3FadMJBsO9Lr4GxNrK5azhT97erdSVfeP4G9Q");
+        cb.setOAuthAccessToken("1459692325-7BDyQHfBNX6qQyYpKoJZWSIqIi23bsM6v24VH9e");
+        cb.setOAuthAccessTokenSecret("fqSSJK8pMiBi8s8vk7tMpbYTAkHDDzAiuhM2WLhfE");
 
         //Getting in Twitter Stream..
         TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
@@ -92,45 +94,48 @@ public class TweetSaver {
 
                 //Array for checking the source of the Tweets
                 String source[] = new String[5];
-                source[0] = "android"; 
-                source[1] = "iphone"; 
-                source[2] = "blackberry"; 
-                source[3] = "windows"; 
+                source[0] = "android";
+                source[1] = "iphone";
+                source[2] = "blackberry";
+                source[3] = "windows";
                 source[4] = "other";
 
                 //add the saved tweets of one interval to the List of intervals
-                if (tenMinutesPassed == true) {
+                if (timePassed == true) {
                     tweetList.add(ti);
-                    System.out.println("Tweetliste erfolgreich hinzugefügt");
+                    totalIntervalAmount++;
                     ti = new TweetInterval();
-                    tenMinutesPassed = false;
+                    timePassed = false;
+                    System.out.println("Tweetliste erfolgreich hinzugefügt");
                 }
 
                 //if the tweets of one day are collected save them to a json file
                 if (tweetList.size() > 5) {
                     System.out.println("Aufruf savte2json");
                     try {
-                        fileSaver.saveToJson(fileNumber, tweetList);
+                        fileSaver.saveToJson(fileNumber, tweetList, totalAmount, totalIntervalAmount);
                     } catch (IOException ex) {
                         Logger.getLogger(TweetSaver.class
                                 .getName()).log(Level.SEVERE, null, ex);
                     }
                     fileNumber++;
                     tweetList.clear();
+                    totalAmount = 0;
+                    totalIntervalAmount = 0;
                 }
 
                 //only save Tweets with Geolocation & Country Code information included
-                if (status.getGeoLocation() != null && status.getPlace()!= null) {
+                if (status.getGeoLocation() != null && status.getPlace() != null) {
 
                     //save the ID of the tweets
                     ti.setID(status.getId());
 
                     //save the username of the tweeter
                     ti.setusername(status.getUser().getScreenName());
-                    
+
                     //save the url to the tweet
-                    ti.setUrl("https://twitter.com/"+status.getUser().getScreenName()+"/status/"+status.getId());
-                    
+                    ti.setUrl("https://twitter.com/" + status.getUser().getScreenName() + "/status/" + status.getId());
+
                     //save source(IPhone,Android..) 
                     for (int i = 0; i < 5; i++) {
                         if (i < 4 && status.getSource().contains(source[i])) {
@@ -190,6 +195,9 @@ public class TweetSaver {
                     //save the countrycodes
                     System.out.println(status.getPlace().getCountryCode());
                     ti.setcCode(status.getPlace().getCountryCode());
+
+                    //raise the counter
+                    totalAmount++;
                 }
             }
 

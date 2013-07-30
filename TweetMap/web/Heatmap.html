@@ -68,7 +68,7 @@ created by lars niestrad@ larsniestrad@gmail.com
             var map, layer, heatmap;
     
             function init(){
-                $.getJSON('1d.json',function(testData){
+                $.getJSON('2.json',function(testData){
                     
                     //transform the data in a format openlayers can read
                     var transformedTestData = { max: 1 , data: [] },
@@ -101,11 +101,11 @@ created by lars niestrad@ larsniestrad@gmail.com
                             
                         value: val,
                         min: 1,
-                        max: 144, //a day has 1440 minutes -> 144 ten-minutes intervals
+                        max: testData.totalIntervalAmount,
                         step: 1,
                         slide: function( event, ui ) {
-                            $( "#amount" ).val( ui.value*10 );
-                                
+                            $( "#amount" ).val( testData.tweets[ui.value].timestamps[1] );
+                            $( "#currentTweetAm").val(testData.tweets[ui.value].ids.length);    
                             data = testData.tweets[ui.value].geolocation;
                             dataLength = data.length;
                             nudata=[];
@@ -120,7 +120,9 @@ created by lars niestrad@ larsniestrad@gmail.com
                             heatmap.setDataSet(transformedTestData);
                         }
                     });
-                    $( "#amount" ).val( $( "#slider" ).slider( "value" )*10 ); 
+                    $( "#amount" ).val( testData.tweets[1].timestamps[1] );
+                    $( "#currentTweetAm").val(testData.tweets[val].ids.length );
+                    $( "#allTweetAm").val(testData.totalAmount);
                 });
             }
         </script>
@@ -129,12 +131,19 @@ created by lars niestrad@ larsniestrad@gmail.com
     <body>
         <div id="main">
             <h1>Heatmap TweetMap</h1>
-            <br /><br />
+            <br />
 
             <!--  slider  -->
             <p>
-                <label for="amount">Minutes passed:</label>
-                <input type="text" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+                <label for="amount">Time:</label>
+                <input type="text" size="35" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+
+            <p>
+                <label for="currentTweetAm">Amount of Tweets of current time interval:</label>
+                <input type="text" id="currentTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
+                <label for="allTweetAm">Total Tweet amount:</label>
+                <input type="text" id="allTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
             </p>
             <div id="slider"></div>
 
