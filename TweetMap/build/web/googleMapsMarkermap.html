@@ -21,7 +21,7 @@ and open the template in the editor.
                 padding:20px;
                 margin:auto;
             }
-            #heatmapArea {
+            #mapArea {
                 position:inherit;
                 width:1024px;
                 height:768px;
@@ -56,10 +56,12 @@ and open the template in the editor.
                 src="http://maps.googleapis.com/maps/api/js?key=xxx&sensor=false&libraries=visualization">
         </script>
         <script type="text/javascript">
+            var markersArray=[];
             function initialize() {
+                
                 //load the data via ajax request
                 $.getJSON('1Day_10minIntervals.json',function(testData){
-                    var map, pointarray, heatmap;
+                    var map;
                     var data = testData.tweets[1].geolocation,
                     
                     dataLength = data.length,
@@ -68,7 +70,6 @@ and open the template in the editor.
                     //transform the data into googlemaps specific objects
                     while(dataLength--){                        
                         nudata[dataLength] = new google.maps.LatLng(data[dataLength][0], data[dataLength][1])
-                        
                     };      
                     
                     //setting up the map options
@@ -78,16 +79,11 @@ and open the template in the editor.
                         mapTypeId: google.maps.MapTypeId.ROADMAP
                     };
                     
-                    map = new google.maps.Map(document.getElementById("heatmapArea"),
+                    map = new google.maps.Map(document.getElementById("mapArea"),
                     mapOptions);
-                
-                    //put the data in a point array and pass it to the heatmap layer
-                    var pointArray = new google.maps.MVCArray(nudata);
-                    var heatmap = new google.maps.visualization.HeatmapLayer({
-                        data: pointArray
-                    });
-                
-                    heatmap.setMap(map);
+                    
+                    setMarkers(map, nudata, testData.tweets[1].sources, 1);
+                    
                     
                     //create slider
                     var val=1;
@@ -107,23 +103,49 @@ and open the template in the editor.
                             while(dataLength--){
                                 nudata[dataLength] = new google.maps.LatLng(data[dataLength][0], data[dataLength][1])
                             }
-                            pointArray = new google.maps.MVCArray(nudata);
-                            heatmap.setData(pointArray);
-                
-                            
+                            deleteOverlays();
+                            setMarkers(map,nudata,testData.tweets[ui.value].sources,val);
                         }
                     });
                     $( "#amount" ).val( testData.tweets[1].timestamps[1] );
                     $( "#currentTweetAm").val(testData.tweets[val].ids.length );
                     $( "#allTweetAm").val(testData.totalAmount);
                 })
+            }  
+            
+            function setMarkers(map, nudata, sources, cInteval) {
+                alert("nudata: "+nudata.length);
+                alert("sources: "+sources.length);
+                //load the graphics
+                var images=new Array();
+                images[0] = 'spd.jpg';
+                images[1] = 'cdu.jpg';
+                images[2] = 'linke.jpg';
+                images[3] = 'csu.jpg';
+                images[4] = 'fdp.jpg';
+                images[5] = 'gruene.jpg';          
+                var geoLength = nudata.length;
+                    
+                for (var i = 0; i < nudata.length; i++) {
+                    
+                    var marker = new google.maps.Marker({
+                        position: nudata[i],
+                        map: map,
+                        icon: images[sources[i]-1]   
+                    });
+                    markersArray.push(marker);
+                }
             }
             
-            function toggleHeatmap() {
-                heatmap.setMap(heatmap.getMap() ? null : map);
+            function deleteOverlays() {
+                if (markersArray) {
+                    for (i in markersArray) {
+                        markersArray[i].setMap(null);
+                    }
+                    markersArray.length = 0;
+                }
             }
-            
-            
+           
         </script>
     </head>
     <body onload="initialize()">
@@ -146,7 +168,7 @@ and open the template in the editor.
             <div id="slider"></div>
 
             <!--            heatmap-->
-            <div id="heatmapArea"></div>
+            <div id="mapArea"></div>
 
             <!--            infobox-->
             <div id="configArea">

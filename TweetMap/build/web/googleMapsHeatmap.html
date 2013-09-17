@@ -57,6 +57,7 @@ and open the template in the editor.
         </script>
         <script type="text/javascript">
             function initialize() {
+                //load the data via ajax request
                 $.getJSON('1Day_10minIntervals.json',function(testData){
                     var map, pointarray, heatmap;
                     var data = testData.tweets[1].geolocation,
@@ -64,10 +65,13 @@ and open the template in the editor.
                     dataLength = data.length,
                     nudata = [];
                     
+                    //transform the data into googlemaps specific objects
                     while(dataLength--){                        
                         nudata[dataLength] = new google.maps.LatLng(data[dataLength][0], data[dataLength][1])
+                        
                     };      
                     
+                    //setting up the map options
                     var mapOptions = {
                         center: new google.maps.LatLng(52.020417, 8.532222),
                         zoom: 2,
@@ -77,6 +81,7 @@ and open the template in the editor.
                     map = new google.maps.Map(document.getElementById("heatmapArea"),
                     mapOptions);
                 
+                    //put the data in a point array and pass it to the heatmap layer
                     var pointArray = new google.maps.MVCArray(nudata);
                     var heatmap = new google.maps.visualization.HeatmapLayer({
                         data: pointArray
@@ -105,7 +110,7 @@ and open the template in the editor.
                             pointArray = new google.maps.MVCArray(nudata);
                             heatmap.setData(pointArray);
                 
-                            //                            heatmap.setMap(map);
+                            
                         }
                     });
                     $( "#amount" ).val( testData.tweets[1].timestamps[1] );
@@ -153,6 +158,6 @@ and open the template in the editor.
             <div style="position:absolute;width:940px;top:750px;text-align:center;">
             </div>
         </div>
-        
+
     </body>
 </html>
