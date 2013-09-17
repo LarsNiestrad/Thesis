@@ -13,11 +13,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import twitter4j.FilterQuery;
 import twitter4j.HashtagEntity;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
 import twitter4j.StatusListener;
+import twitter4j.TwitterException;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.URLEntity;
@@ -31,7 +33,7 @@ public class TweetSaver {
 
     private final Timer timer = new Timer();
     private boolean timePassed = false;
-    private int timeSecondsInterval = 6;
+    private int timeSecondsInterval = 600;
     private Map<String, Integer> cCodes = new HashMap<>();
     private int totalAmount = 0; //counts the amount of tweets per file
     private int totalIntervalAmount = 0;
@@ -75,10 +77,10 @@ public class TweetSaver {
          */
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true);
-        cb.setOAuthConsumerKey("xxx");
-        cb.setOAuthConsumerSecret("xxx");
-        cb.setOAuthAccessToken("xxx-xxx");
-        cb.setOAuthAccessTokenSecret("xxx");
+        cb.setOAuthConsumerKey("dKGMS5ITVwck1CVbAxmpw");
+        cb.setOAuthConsumerSecret("2xgvYhpZumllFe5GWu7Mc9VRWqVFa42EZBRmOuHI");
+        cb.setOAuthAccessToken("1702547767-njPjdttyjaiKHufkOppTRdwAzTxrfMpVR5fuEQ0");
+        cb.setOAuthAccessTokenSecret("RQTuK55fqMGibF2Z0XhO0xpvShgc5WEMFr3S2QXxhk");
 
         //Getting in Twitter Stream..
         TwitterStream twitterStream = new TwitterStreamFactory(cb.build()).getInstance();
@@ -110,7 +112,9 @@ public class TweetSaver {
                 }
 
                 //if the tweets of one day are collected save them to a json file
-                if (tweetList.size() > 5) {
+                if (totalAmount > 100000) {
+                    tweetList.add(ti);
+                    totalIntervalAmount++;
                     System.out.println("Aufruf savte2json");
                     try {
                         fileSaver.saveToJson(fileNumber, tweetList, totalAmount, totalIntervalAmount);
@@ -225,7 +229,10 @@ public class TweetSaver {
                 excptn.printStackTrace();
             }
         };
+        
         twitterStream.addListener(listener);
         twitterStream.sample();
+        
+        //twitterStream.sample();
     }
 }

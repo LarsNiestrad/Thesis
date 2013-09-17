@@ -30,6 +30,7 @@ public class FileSaver {
                 "],\"totalIntervalAmount\":["+totalIntervalAmount+"],\"tweets\":{");
         
         //go through the saved data a build a string in json Format
+        for (int dv = 0; dv<10; dv++){
         for (TweetInterval ti : til) {
 
             /*note: the ids have to be saved in quotes because jvectormap needs
@@ -110,6 +111,7 @@ public class FileSaver {
             sb.deleteCharAt(sb.length() - 1);
             sb.append("}},");
             i++;
+        }
         }
         sb.deleteCharAt(sb.length() - 1);
         sb.append("}}");
