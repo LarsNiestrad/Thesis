@@ -56,7 +56,9 @@ and open the template in the editor.
                 src="http://maps.googleapis.com/maps/api/js?key=xxx&sensor=false&libraries=visualization">
         </script>
         <script type="text/javascript">
+           
             var markersArray=[];
+            var infowindow=null;
             function initialize() {
                 
                 //load the data via ajax request
@@ -82,7 +84,7 @@ and open the template in the editor.
                     map = new google.maps.Map(document.getElementById("mapArea"),
                     mapOptions);
                     
-                    setMarkers(map, nudata, testData.tweets[1].sources, 1);
+                    setMarkers(map, nudata, testData.tweets[1].sources, 1,testData.tweets[1].tweetlinks);
                     
                     
                     //create slider
@@ -103,8 +105,9 @@ and open the template in the editor.
                             while(dataLength--){
                                 nudata[dataLength] = new google.maps.LatLng(data[dataLength][0], data[dataLength][1])
                             }
+                            //delete the old markers and place the new ones
                             deleteOverlays();
-                            setMarkers(map,nudata,testData.tweets[ui.value].sources,val);
+                            setMarkers(map,nudata,testData.tweets[ui.value].sources,val,testData.tweets[ui.value].tweetlinks);
                         }
                     });
                     $( "#amount" ).val( testData.tweets[1].timestamps[1] );
@@ -113,9 +116,9 @@ and open the template in the editor.
                 })
             }  
             
-            function setMarkers(map, nudata, sources, cInteval) {
-                alert("nudata: "+nudata.length);
-                alert("sources: "+sources.length);
+            //
+            function setMarkers(map, nudata, sources, cInteval,testData) {
+                
                 //load the graphics
                 var images=new Array();
                 images[0] = 'spd.jpg';
@@ -123,10 +126,13 @@ and open the template in the editor.
                 images[2] = 'linke.jpg';
                 images[3] = 'csu.jpg';
                 images[4] = 'fdp.jpg';
-                images[5] = 'gruene.jpg';          
+                images[5] = 'gruene.jpg'; 
+                
                 var geoLength = nudata.length;
                     
                 for (var i = 0; i < nudata.length; i++) {
+                    
+                    var content =testData[i];
                     
                     var marker = new google.maps.Marker({
                         position: nudata[i],
@@ -134,9 +140,17 @@ and open the template in the editor.
                         icon: images[sources[i]-1]   
                     });
                     markersArray.push(marker);
+                    
+                    google.maps.event.addListener(marker, 'click', (function(marker, content) {
+                        return function() {
+                            infowindow.setContent(content);
+                            infowindow.open(map, marker);
+                        }
+                    })(marker, content));
                 }
             }
             
+            //deletes all the markers view on the map
             function deleteOverlays() {
                 if (markersArray) {
                     for (i in markersArray) {
@@ -145,6 +159,13 @@ and open the template in the editor.
                     markersArray.length = 0;
                 }
             }
+            
+            var infowindow = new google.maps.InfoWindow({
+                content: "Hello World"
+            });
+            google.maps.event.addListener(marker, 'click', function() {
+                infowindow.open(map,marker);
+            });
            
         </script>
     </head>
