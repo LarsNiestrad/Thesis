@@ -1,0 +1,214 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--        load the jquery apis-->
+        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+
+        <!--        load the google.visualization api-->
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+        <!--        configure the div containers-->
+        <style>
+
+            #main {
+                position:inherit;
+                width:1020px;
+                padding:20px;
+                margin:auto;
+            }
+            #mapArea {
+                position:inherit;
+                width:1024px;
+                height:768px;
+                border:1px dashed black;
+                float:left;
+            }
+            #configArea {
+                position:inherit;
+                width:200px;
+                padding:15px;
+                padding-top:0;
+                padding-right:0;
+                float:right;
+            }
+            .btn {
+                margin-top:25px;
+                padding:10px 20px 10px 20px;
+                -moz-border-radius:15px;
+                -o-border-radius:15px;
+                -webkit-border-radius:15px;
+                border-radius:15px;
+                border:2px solid black;
+                cursor:pointer;
+                color:white;
+                background-color:black;
+            }
+        </style>
+
+        <script type="text/javascript">
+            
+            //load the required chart package(s)
+            google.load("visualization", "1", {packages:["corechart"]});
+            
+            
+            function init(){
+                //load the json data and call chart drawing function
+                $.getJSON('1Day_10minIntervals.json',function(testData){
+                    drawPieChart(testData);
+                })
+            }
+            
+            function drawPieChart(testData) {
+ 
+                //BubbleChart
+                var bData = new google.visualization.DataTable();
+                bData.addColumn('string','Username')
+                bData.addColumn('number','Links');
+                bData.addColumn('number','Hastags');
+                bData.addColumn('number','Operating System');
+                bData.addColumn('number','Follower');
+                
+                for (var i=0; i<testData.tweets[1].sources.length;i++){
+                    bData.addRow(
+                    ['',testData.tweets[1].links[i].length,testData.tweets[1].hashtags[i].length,
+                        testData.tweets[1].sources[i],testData.tweets[1].followers[i]]
+                );
+                }
+                var bOptions = {
+                    title: 'Correlation between links, hashtags, os and follower of saved tweets',
+                    hAxis: {title: 'Links',minValue: -1},
+                    vAxis: {title: 'Hashtags',minValue:-1},
+                    bubble: {textStyle: {fontSize: 11}}
+                };
+                   
+                var bChart = new google.visualization.BubbleChart(document.getElementById('bChart_div'));
+                bChart.draw(bData, bOptions);
+ 
+                //BulldeChartEnd
+                
+                //count the sources values
+                sources = new Array(0,0,0,0,0);
+                for (var i=0; i<testData.tweets[1].sources.length;i++) {
+                    sources[testData.tweets[1].sources[i]-1]+=1;
+                }
+                
+                //transform the data 
+                var data = google.visualization.arrayToDataTable([
+                    ['Operating System','Amount'],
+                    ['Android',sources[0]],
+                    ['IOS',sources[1]],
+                    ['Blackberry',sources[2]],
+                    ['WindowsPhone',sources[3]],
+                    ['Other',sources[4]]
+                ]);
+                            
+                //set up map options
+                var options = {
+                    title: 'Amount of used operating systems'
+                };
+                        
+                //draw chart 
+                var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+                chart.draw(data, options);
+                    
+                //create slider
+                var val=1;
+                $("#slider").slider({
+                            
+                    value: val,
+                    min: 1,
+                    max: testData.totalIntervalAmount,
+                    step: 1,
+                    slide: function( event, ui ) { 
+                        
+                        $( "#amount" ).val( testData.tweets[ui.value].timestamps[1] );
+                        $( "#currentTweetAm").val(testData.tweets[ui.value].ids.length);    
+                        
+                        //##PieChart##
+                        dataLength = data.length;
+                        nudata=[];
+                            
+                        //count the new sources values
+                        sources = new Array(0,0,0,0,0);
+                        for (var i=0; i<testData.tweets[ui.value].sources.length;i++) {
+                            sources[testData.tweets[1].sources[i]-1]+=1;
+                        }
+                        //transform the new data 
+                        data = google.visualization.arrayToDataTable([
+                            ['Operating System','Amount'],
+                            ['Android',sources[0]],
+                            ['IOS',sources[1]],
+                            ['Blackberry',sources[2]],
+                            ['WindowsPhone',sources[3]],
+                            ['Other',sources[4]]
+                        ]);
+                            
+                        //draw new chart 
+                        chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+                        chart.draw(data, options);
+                        //##PieChartEnd## 
+                        
+                        //##BubbleChart
+                        bData = new google.visualization.DataTable();
+                        bData.addColumn('string','Username')
+                        bData.addColumn('number','Links');
+                        bData.addColumn('number','Hastags');
+                        bData.addColumn('number','Operating System');
+                        bData.addColumn('number','Follower');
+                
+                        for (var i=0; i<testData.tweets[ui.value].sources.length;i++){
+                            bData.addRow(
+                            ['',testData.tweets[ui.value].links[i].length,testData.tweets[ui.value].hashtags[i].length,
+                                testData.tweets[ui.value].sources[i],testData.tweets[ui.value].followers[i]]
+                        );
+                        }
+                
+                        bChart = new google.visualization.BubbleChart(document.getElementById('bChart_div'));
+                        bChart.draw(bData, bOptions);
+                        //##BubbleChartEnd
+                    }
+                });
+                $( "#amount" ).val( testData.tweets[1].timestamps[1] );
+                $( "#currentTweetAm").val(testData.tweets[val].ids.length );
+                $( "#allTweetAm").val(testData.totalAmount);
+            }
+        </script>
+    </head>
+    <body onload="init()">
+        <div id="main">
+            <h1>Chart GoogleVisualization</h1>
+            <br />
+
+            <!--  slider  -->
+            <p>
+                <label for="amount">Time:</label>
+                <input type="text" size="35" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+
+            <p>
+                <label for="currentTweetAm">Amount of Tweets of current time interval:</label>
+                <input type="text" id="currentTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
+                <label for="allTweetAm">Total Tweet amount:</label>
+                <input type="text" id="allTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+            <div id="slider"></div>
+
+            <!--            PieChart-->
+            <div id="chart_div" style="width: 900px; height: 500px;"></div>
+
+            <!--            BubbleChart-->
+            <div id="bChart_div" style="width: 900px; height: 500px;"></div>
+            <!--            infobox-->
+            <div id="configArea">
+                <h2>Description</h2>
+                Use the Slider to go through the ten minutes intervales<br/><br/>
+            </div>
+        </div>
+    </body>
+</html>
