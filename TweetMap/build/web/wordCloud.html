@@ -1,0 +1,200 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>jQCloud WordCloud</title>
+        <style type="text/css">
+
+            <!--        configure the div containers-->
+
+            #main {
+                position:inherit;
+                width:1020px;
+                padding:20px;
+                margin:auto;
+            }
+            #div.jqcloud span.vertical {
+                position:inherit;
+                width:1024px;
+                height:768px;
+                border:1px dashed black;
+                float:left;
+                -webkit-writing-mode: vertical-rl;
+                writing-mode: tb-rl;
+            }
+            #configArea {
+                position:inherit;
+                width:200px;
+                padding:15px;
+                padding-top:0;
+                padding-right:0;
+                float:right;
+            }
+            .btn {
+                margin-top:25px;
+                padding:10px 20px 10px 20px;
+                -moz-border-radius:15px;
+                -o-border-radius:15px;
+                -webkit-border-radius:15px;
+                border-radius:15px;
+                border:2px solid black;
+                cursor:pointer;
+                color:white;
+                background-color:black;
+            }
+        </style>
+
+        <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+        <link rel="stylesheet" type="text/css" href="externalLibs/jqcloud.css" />
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+        <script type="text/javascript" src="externalLibs/jqcloud-1.0.4.js"></script>
+        <script type="text/javascript">
+            
+            function initialize() {
+                
+                //load the data via ajax request
+                $.getJSON('1Day_10minIntervals.json',function(testData){
+                    var hashtags = new Array();
+                    var splitter = new Array();
+                    var word_list = new Array();
+                    
+                    //transform the data in a String array
+                    for( var i = 0; i<testData.tweets[1].hashtags.length; i++) {
+                        splitter = testData.tweets[1].hashtags[i].split(",");
+                        for (var z = 0; z<splitter.length; z++){
+                            //we need to split the arguments because of the json structure
+                            if(splitter[z]==""){
+                                continue;
+                            }
+                            hashtags.push(splitter[z]);
+                        }        
+                        splitter=[];
+                    }
+                    
+                    var countedHashtags;
+                    countedHashtags = countAndSummarize(hashtags);
+                    
+                    //create an array with a structure jQCloud can work with
+                    for(var i=0; i<countedHashtags.length/2; i=i+2){
+                        word_list.push({text: countedHashtags[i].toString(), weight: countedHashtags[i+1]});
+                    }
+                        
+                    //draw the cloud
+                    $(function() {
+                        $("#word_cloud").jQCloud(word_list);
+                    })
+                    
+                    //create slider
+                    var val=1;
+                    $("#slider").slider({
+                            
+                        value: val,
+                        min: 1,
+                        max: testData.totalIntervalAmount,
+                        step: 1,
+                        slide: function( event, ui ) {
+                            $( "#amount" ).val( testData.tweets[ui.value].timestamps[1] );
+                            $( "#currentTweetAm").val(testData.tweets[ui.value].ids.length);    
+                            data = testData.tweets[ui.value].hashtags;
+                            dataLength = data.length;
+                            nudata=[];
+                            hashtags=[];    
+                            for( var i = 0; i<testData.tweets[ui.value].hashtags.length; i++) {
+                                splitter = testData.tweets[ui.value].hashtags[i].split(",");
+                                for (var z = 0; z<splitter.length; z++){
+                                    if(splitter[z]==""){
+                                        continue;
+                                    }
+                                    hashtags.push(splitter[z]);
+                                }        
+                                splitter=[];
+                            }
+                    
+                            var countedHashtags;
+                            countedHashtags = countAndSummarize(hashtags);
+                            
+                            var word_list = new Array; 
+
+                            for(var i=0; i<countedHashtags.length/2; i=i+2){
+                                word_list.push({text: countedHashtags[i].toString(), weight: countedHashtags[i+1]});
+                            }
+                          
+                            $(function() {
+                                //clear container ( remove old cloud )
+                                clearBox('word_cloud');
+                                $("#word_cloud").jQCloud(word_list);
+                            });
+                        }
+                    });
+                    $( "#amount" ).val( testData.tweets[1].timestamps[1] );
+                    $( "#currentTweetAm").val(testData.tweets[val].ids.length );
+                    $( "#allTweetAm").val(testData.totalAmount);        
+                });
+            };
+            
+            function clearBox(elementID)
+            {
+                document.getElementById(elementID).innerHTML = "";
+            }
+            
+            function countAndSummarize(a1) 
+            {
+                a1.sort();
+                var a2 = new Array();
+                for(var i = 0; i < a1.length; i++)
+                {
+                    if(typeof(a2[a1[i]]) == "undefined")
+                    {
+                        a2[a2.length] = a1[i];
+                        a2[a1[i]] = 1;
+                    }
+                    else{a2[a1[i]]++}
+                }
+                var a3 = new Array();
+                for(var i = 0; i < a2.length; i++)
+                {
+                    a3[a3.length] = a2[i];
+                    a3[a3.length] = a2[a2[i]];
+                }
+                return a3;
+            }
+        </script>
+    </head>
+    <body onload="initialize()">
+        <div id="main">
+            <h1>Twitter Worldcloud</h1>
+            <br />
+
+            <!--  slider  -->
+            <p>
+                <label for="amount">Time:</label>
+                <input type="text" size="35" id="amount" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+
+            <p>
+                <label for="currentTweetAm">Amount of Tweets of current time interval:</label>
+                <input type="text" id="currentTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
+                <label for="allTweetAm">Total Tweet amount:</label>
+                <input type="text" id="allTweetAm" style="border: 0; color: #f6931f; font-weight: bold;" />
+            </p>
+            <div id="slider"></div>
+
+            <!--            wordcloud-->
+            <div id="word_cloud" style="width: 500px; height: 450px; border: 1px solid #ccc;"></div>
+
+            <!--            infobox-->
+            <div id="configArea">
+                <h2>Description</h2>
+                Use the Slider to go through the ten minutes intervales<br/><br/>
+            </div>
+
+            <!--            binding in the map-->
+            <div style="position:absolute;width:940px;top:750px;text-align:center;">
+            </div>
+        </div>
+    </body>
+</html>
